@@ -1,10 +1,19 @@
 // importing
 import express from "express";
 import mongoose from "mongoose";
+import Pusher from 'Pusher'
 
 // app config
 const app = express();
 const port = process.env.PORT || 9000;
+
+const pusher = new Pusher({
+  appId: "1267636",
+  key: "12852351f22566cbb74b",
+  secret: "04789fa1e184fde00ff2",
+  cluster: "eu",
+  useTLS: true,
+});
 
 //middleware
 app.use(express.json());
@@ -15,6 +24,19 @@ const Connection_URL =
 
 mongoose.connect(Connection_URL);
 
+const db = mongoose.connection
+
+db.once('open', ()=>{
+    console.log('DB connected');
+
+    const msgCollection = db.collection("messagecontents");
+    const changeStream = msgCollection.watch();
+
+    changeStream.on('change', (change)=>{
+        console.log(change);
+    })
+})
+
 // DB Messages
 
 const whatsappSchema = mongoose.Schema({
@@ -24,7 +46,7 @@ const whatsappSchema = mongoose.Schema({
   received: Boolean,
 });
 
-const Messages = mongoose.model("messageContent", whatsappSchema);
+const Messages = mongoose.model("messagecontents", whatsappSchema);
 
 // api routes
 app.get("/", (req, res) => res.status(200).send("Helo World. my name is fuad"));
