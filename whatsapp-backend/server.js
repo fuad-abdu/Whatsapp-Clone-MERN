@@ -1,7 +1,8 @@
 // importing
 import express from "express";
 import mongoose from "mongoose";
-import Pusher from 'Pusher'
+import Pusher from "Pusher";
+import cors from "cors";
 
 // app config
 const app = express();
@@ -17,6 +18,7 @@ const pusher = new Pusher({
 
 //middleware
 app.use(express.json());
+app.use(cors());
 
 // DB config
 const Connection_URL =
@@ -24,18 +26,28 @@ const Connection_URL =
 
 mongoose.connect(Connection_URL);
 
-const db = mongoose.connection
+const db = mongoose.connection;
 
-db.once('open', ()=>{
-    console.log('DB connected');
+db.once("open", () => {
+  console.log("DB connected");
 
-    const msgCollection = db.collection("messagecontents");
-    const changeStream = msgCollection.watch();
+  const msgCollection = db.collection("messagecontents");
+  const changeStream = msgCollection.watch();
 
-    changeStream.on('change', (change)=>{
-        console.log(change);
-    })
-})
+  changeStream.on("change", (change) => {
+    console.log(change);
+
+    if (change.operationType === "insert") {
+      const messageDetails = change.fullDocument;
+      pusher.trigger("message", "inserted", {
+        name: messageDetails.name,
+        message: messageDetails.message,
+      });
+    } else {
+      console.log("err triggering pusher");
+    }
+  });
+});
 
 // DB Messages
 
