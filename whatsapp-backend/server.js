@@ -35,13 +35,15 @@ db.once("open", () => {
   const changeStream = msgCollection.watch();
 
   changeStream.on("change", (change) => {
-    console.log(change);
+    // console.log(change);
 
     if (change.operationType === "insert") {
       const messageDetails = change.fullDocument;
       pusher.trigger("message", "inserted", {
         name: messageDetails.name,
         message: messageDetails.message,
+        timestamp: messageDetails.timestamp,
+        received: messageDetails.received
       });
     } else {
       console.log("err triggering pusher");
@@ -58,13 +60,29 @@ const whatsappSchema = mongoose.Schema({
   received: Boolean,
 });
 
+
+const whatsappRoomsSchema = mongoose.Schema({
+  name: String
+});
+
 const Messages = mongoose.model("messagecontents", whatsappSchema);
+const Rooms = mongoose.model("rooms", whatsappRoomsSchema);
 
 // api routes
 app.get("/", (req, res) => res.status(200).send("Helo World. my name is fuad"));
 
 app.get("/messages/sync", (req, res) => {
   Messages.find((err, data) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      res.status(200).send(data);
+    }
+  });
+});
+
+app.get("/rooms/sync", (req, res) => {
+  Rooms.find((err, data) => {
     if (err) {
       res.status(500).send(err);
     } else {
