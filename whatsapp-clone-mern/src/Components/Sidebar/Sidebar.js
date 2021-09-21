@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./Sidebar.css";
 
 import SidebarChats from "./SidebarChats/SidebarChats";
+import Pusher from 'pusher-js';
 
 //Icons//
 
@@ -11,10 +12,13 @@ import MoreVertIcon from "@material-ui/icons/MoreVert";
 import { Avatar, IconButton } from "@material-ui/core";
 import { SearchOutlined } from "@material-ui/icons";
 import axios from "../../axios";
+import { AuthContext } from "../../Store/Context";
 
 //Icons//
 
 function Sidebar() {
+
+  const { user } = useContext(AuthContext);
   const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
@@ -24,10 +28,25 @@ function Sidebar() {
     });
   }, []);
 
+  useEffect(() => {
+    const pusher = new Pusher("12852351f22566cbb74b", {
+      cluster: "eu",
+    });
+    const RoomChannel = pusher.subscribe("room");
+    RoomChannel.bind("RoomInserted", (data) => {
+      setRooms([...rooms, data]);
+    });
+
+    return () => {
+      RoomChannel.unbind_all();
+      RoomChannel.unsubscribe();
+    };
+  }, [rooms]);
+
   return (
     <div className="sidebar">
       <div className="sidebar__header">
-        <Avatar src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQrvUt1lNZ6dV1w2iw54YGlPSGPMPZoxKg6zw&usqp=CAU" />
+        <Avatar src={`${user?.photoURL}`} />
 
         <div className="sidebar__headerRight">
           <IconButton>
@@ -52,13 +71,7 @@ function Sidebar() {
       <div className="sidebar__chats">
         <SidebarChats addNewChat />
         {rooms.map((room) => {
-            return(
-                <SidebarChats
-                    key={room._id}
-                    id={room._id}
-                    name={room.name}
-                />
-            )
+          return <SidebarChats key={room._id} id={room._id} name={room.name} />;
         })}
       </div>
     </div>

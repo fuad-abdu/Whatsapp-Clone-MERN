@@ -1,21 +1,26 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom';
 import './SidebarChats.css'
 
 //Icons//
 
 import { Avatar } from '@material-ui/core'
+import axios from '../../../axios';
 
 //Icons//
 
-function SidebarChats({ addNewChat }) {
+function SidebarChats({ addNewChat, name, id, chats }) {
 
     const [seed, setSeed] = useState('');
-    
+
     const createChat = () => {
         const roomName = prompt("Please Enter name for Chat")
 
-        if(roomName){
+        if (roomName) {
             // do some db Stuff...
+            axios.post('/rooms/new', {
+                name: roomName
+            });
         }
     }
 
@@ -24,13 +29,15 @@ function SidebarChats({ addNewChat }) {
     }, [])
 
     return !addNewChat ? (
-        <div className="sidebarChats">
-            <Avatar src={`https://avatars.dicebear.com/api/avataaars/${seed}.svg`} />
-            <div className="sidebarChats__info">
-                <h2>Room name</h2>
-                <p>Last message</p>
+        <Link to={`/rooms/${id}`}>
+            <div className="sidebarChats">
+                <Avatar src={`https://avatars.dicebear.com/api/avataaars/${seed}.svg`} />
+                <div className="sidebarChats__info">
+                    <h2>{name}</h2>
+                    <p>Last message</p>
+                </div>
             </div>
-        </div>
+        </Link>
     ) : (
         <div
             className="sidebarChats"
