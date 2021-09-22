@@ -9,9 +9,10 @@ import axios from '../../../axios';
 
 //Icons//
 
-function SidebarChats({ addNewChat, name, id, chats }) {
+function SidebarChats({ addNewChat, name, id }) {
 
     const [seed, setSeed] = useState('');
+    const [messages, setMessages] = useState();
 
     const createChat = () => {
         const roomName = prompt("Please Enter name for Chat")
@@ -27,6 +28,18 @@ function SidebarChats({ addNewChat, name, id, chats }) {
     useEffect(() => {
         setSeed(Math.floor(Math.random() * 5000));
     }, [])
+    
+    useEffect(() => {
+        if (id) {
+            axios.get(`/messages/sync/${id}`).then(res => {
+                const ordered = res.data.sort(function(x, y){
+                    return x.timestamp + y.timestamp;
+                })
+                // console.log('ordered .,,,,,,');
+                setMessages(ordered.at(-1)?.message);
+            })
+        }
+    });
 
     return !addNewChat ? (
         <Link to={`/rooms/${id}`}>
@@ -34,7 +47,7 @@ function SidebarChats({ addNewChat, name, id, chats }) {
                 <Avatar src={`https://avatars.dicebear.com/api/avataaars/${seed}.svg`} />
                 <div className="sidebarChats__info">
                     <h2>{name}</h2>
-                    <p>Last message</p>
+                    <p>{messages}</p>
                 </div>
             </div>
         </Link>

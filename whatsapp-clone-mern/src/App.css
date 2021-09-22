@@ -5,6 +5,11 @@
   background-color: #dadbd3;
 }
 
+a{
+  text-decoration: none !important;
+  color: black;
+}
+
 .app_body{
   display: flex;
   background-color: #ededed;

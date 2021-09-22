@@ -70,6 +70,9 @@ function Chat({messages, setMessages}) {
         setInput('');
     }
 
+    const lastSeen = messages.at(-1)?.timestamp
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     return (
         <div className="chat">
             <div className="chat__header">
@@ -77,7 +80,13 @@ function Chat({messages, setMessages}) {
 
                 <div className="chat__headerInfo">
                     <h3>{RoomName}</h3>
-                    <p>Last Seen at..</p>
+                    <p>
+                        {`Last Seen  ${new Date(`${lastSeen}`).toLocaleString('en-US', { timeZone: zone })}`}
+                        
+                        {/* {
+                            new Date(`${lastSeen}`).toLocaleString('en-US', { timeZone: zone })
+                        } */}
+                    </p>
                 </div>
 
                 <div className="chat__headerRight">
@@ -96,7 +105,7 @@ function Chat({messages, setMessages}) {
             <div className="chat__body">
                 {messages.map((message) => {
                     const d = new Date(`${message.timestamp}`)
-                    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    // const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
                     const date_time = d.toLocaleString('en-US', { timeZone: zone });
                     console.log("time ->  >>>> ", date_time);
                     return (
